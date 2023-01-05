@@ -1,0 +1,42 @@
+useDecl = 'use' { paramList } block;
+
+funcDecl = 'fnc' Name '(' { paramList } ')' { ':' type } { block };
+
+functionCall = Name '(' {argList} ')';
+
+loop = 'loop' { '(' expr ')' } block 'end';
+
+conditional = 'if' '(' expr ')' block {'elseif' '(' expr ')' block} {'else' block};
+
+assignment = Name ':=' expr;
+
+block = '{' {stat} '}';
+expBlock = '{' exp '}'
+
+paramList = Name ':' type {',' Name ':' type};
+
+argList = expr (',' expr);
+
+expr = expr ( '||' expr )
+    | expr ( '&&' expr )
+    | {'!'} expr
+    | expr ( ('<'|'<='|'>'|'>='|'=='|'!='|'?') expr )
+    | expr ('+'|'-' expr)
+    | expr ('*'|'/'|'%' expr)
+    | '-' expr
+    | '(' expr ')'
+    | Number
+    | String
+    | functionCall
+    | Name;
+
+type = 'number'
+    | 'string'
+    | 'bool'
+    | 'void'
+    | 'any'
+    | Name;
+
+Number = '[0-9]*';
+String = '"' '[.*]?' '"';
+Name = '[A-Z_a-z]' {'[0-9A-Z_a-z]'};
