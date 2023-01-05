@@ -1,5 +1,6 @@
 module ebnf
 enum TokenType {
+	unknown
 	rule // bla
 	literal // 'int'
 	assign // :=
@@ -12,8 +13,13 @@ enum TokenType {
 	group_open // (
 	group_close // )
 
+	comment // #
+	comment_open // (*
+	comment_close// *)
+
 	colon
 	eql
+	star
 }
 const(
 	all_chars = [
@@ -35,6 +41,9 @@ const(
 		')': TokenType.group_close
 		'\'': TokenType.literal
 		'\"': TokenType.literal
+		'#': TokenType.comment
+		'(*': TokenType.comment_open
+		'*)': TokenType.comment_close
 	}
 	symbol_list = {
 		':': TokenType.colon
@@ -49,6 +58,8 @@ const(
 		')': TokenType.group_close
 		'\'': TokenType.literal
 		'\"': TokenType.literal
+		'#': TokenType.comment
+		'*': TokenType.star
 	}
 )
 fn preprocessor(lines []string) []string {
@@ -56,7 +67,7 @@ fn preprocessor(lines []string) []string {
 	mut is_string := false
 	mut is_char := false
 	mut is_number := false
-	mut words := []string {len: lines.len, cap: lines.len * 20}
+	mut words := []string{}
 	mut word := ""
 	// TODO: Tupel for errors
 	for line in lines {
@@ -102,29 +113,40 @@ fn preprocessor(lines []string) []string {
 			}
 			if x := symbol_list[c] {
 				if y := symbol_list[next] {
-					mut tmp := "" + c + next
+					tmp := "" + c + next
 					if z := operator_list[tmp] {
-						word = c + next
-						words << word
+						words << tmp
 						word = ''
 						i += 2
 						continue
 					}
 				}
-				if c == '\"' {
-					word += "\""
-					for (i++ < line.len) && (line[i].ascii_str() != '\"') {
-						word += line[i].ascii_str()
-					}
-					word += "\""
-					continue
-				}
 				if c == '\'' {
 					word += "\'"
-					for (i++ < line.len) && (line[i].ascii_str() != '\'') {
-						word += line[i].ascii_str()
+					i++
+					for i < line.len {
+						if line[i].ascii_str() != '\'' {
+							word += line[i].ascii_str()
+						} else {
+							break
+						}
+						i++
 					}
 					word += "\'"
+					continue
+				}
+				if c == '\"' {
+					word += "\""
+					i++
+					for i < line.len {
+						if line[i].ascii_str() != '\"' {
+							word += line[i].ascii_str()
+						} else {
+							break
+						}
+						i++
+					}
+					word += "\""
 					continue
 				}
 				if word != "" {

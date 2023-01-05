@@ -1,26 +1,26 @@
-useDecl = 'use' { paramList } block;
+useDecl := 'use' { paramList } block;
 
-funcDecl = 'fnc' Name '(' { paramList } ')' { ':' type } { block };
+funcDecl := 'fnc' Name '(' { paramList } ')' { ':' type } { block };
 
-functionCall = Name '(' {argList} ')';
+functionCall := Name '(' {argList} ')';
 
-loop = 'loop' { '(' expr ')' } block 'end';
+loop := 'loop' { '(' expr ')' } block 'end';
 
-conditional = 'if' '(' expr ')' block {'elseif' '(' expr ')' block} {'else' block};
+conditional := 'if' '(' expr ')' block {'elseif' '(' expr ')' block} {'else' block};
 
-assignment = Name ':=' expr;
+assignment := Name ':=' expr;
 
-block = '{' {stat} '}';
-expBlock = '{' exp '}'
+block := '{' {stat} '}';
+expBlock := '{' exp '}'
 
-paramList = Name ':' type {',' Name ':' type};
+paramList := Name ':' type {',' Name ':' type};
 
-argList = expr (',' expr);
+argList := expr (',' expr);
 
-expr = expr ( '||' expr )
+expr := expr ( '||' expr )
     | expr ( '&&' expr )
     | {'!'} expr
-    | expr ( ('<'|'<='|'>'|'>='|'=='|'!='|'?') expr )
+    | expr ( ('<'|'<='|'>'|'>='|'='|'!='|'?') expr )
     | expr ('+'|'-' expr)
     | expr ('*'|'/'|'%' expr)
     | '-' expr
@@ -30,13 +30,13 @@ expr = expr ( '||' expr )
     | functionCall
     | Name;
 
-type = 'number'
+type := 'number'
     | 'string'
     | 'bool'
     | 'void'
     | 'any'
     | Name;
 
-Number = '[0-9]*';
-String = '"' '[.*]?' '"';
-Name = '[A-Z_a-z]' {'[0-9A-Z_a-z]'};
+Number := '[0-9]*';
+String := '"' '[.*]?' '"';
+Name := '[A-Z_a-z]' { '[0-9A-Z_a-z]' };
