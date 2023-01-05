@@ -13,11 +13,15 @@ struct EbnfDocument {
 }
 pub fn read_ebnf(filename string) EbnfDocument {
 	document_lines := os.read_lines(filename) or { panic("Could not read file...")}
-	lexed := preprocessor(document_lines)
+	preprocessed := preprocessor(document_lines)
+	lexed := lexer(preprocessed)
 	for item in lexed {
-		println("${item}")
+		println("${item.item1} : ${item.item2}")
+		if item.item2 == ";" {
+			println("")
+		}
 	}
-	return EbnfDocument{
-		raw: lexed
+	return EbnfDocument {
+		raw: preprocessed
 	}
 }
