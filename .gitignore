@@ -3,13 +3,22 @@
 *.exe~
 *.so
 *.dylib
-*.dll
+*.js
+*.c
+*.ebnf
+*.exp
+*.ilk
+*.lib
+*.pdb
+*.json
+*.js
 
 # Ignore binary output folders
 bin/
 
 # Ignore common editor/system specific metadata
 .DS_Store
+../.idea/
 .idea/
 .vscode/
 *.iml
