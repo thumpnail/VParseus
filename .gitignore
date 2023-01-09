@@ -5,16 +5,23 @@
 *.dylib
 *.js
 *.c
+*.C
 *.ebnf
 *.exp
 *.ilk
 *.lib
 *.pdb
 *.json
-*.js
+*.cs
+*.graphml
+*.txt
+
+#ignore not-yet-to-release folder
+lua/
 
 # Ignore binary output folders
 bin/
+/build/
 
 # Ignore common editor/system specific metadata
 .DS_Store
@@ -22,3 +29,4 @@ bin/
 .idea/
 .vscode/
 *.iml
+
