@@ -1,6 +1,21 @@
-useDecl := 'use' { paramList } block;
+program := { stat };
 
-funcDecl := 'fnc' Name '(' { paramList } ')' { ':' type } { block };
+stat := assignment
+    | funcDecl
+    | functionCall
+    | loop
+    | conditional
+    | dataDecl
+    | useDecl
+	| 'break'
+	| 'continue'
+    | ';';
+
+dataDecl := 'data' Name {':' type} {block};
+
+useDecl := 'use' {paramList} block;
+
+funcDecl := 'fnc' Name '(' {paramList} ')' {':' type} {block};
 
 functionCall := Name '(' {argList} ')';
 
@@ -11,7 +26,6 @@ conditional := 'if' '(' expr ')' block {'elseif' '(' expr ')' block} {'else' blo
 assignment := Name ':=' expr;
 
 block := '{' {stat} '}';
-expBlock := '{' exp '}'
 
 paramList := Name ':' type {',' Name ':' type};
 
@@ -19,8 +33,8 @@ argList := expr (',' expr);
 
 expr := expr ( '||' expr )
     | expr ( '&&' expr )
-    | {'!'} expr
-    | expr ( ('<'|'<='|'>'|'>='|'='|'!='|'?') expr )
+    | ['!'] expr
+    | expr ( ('<'|'<='|'>'|'>='|'=='|'!='|'?') expr )
     | expr ('+'|'-' expr)
     | expr ('*'|'/'|'%' expr)
     | '-' expr
@@ -39,4 +53,4 @@ type := 'number'
 
 Number := '[0-9]*';
 String := '"' '[.*]?' '"';
-Name := '[A-Z_a-z]' { '[0-9A-Z_a-z]' };
+Name := '[A-Z_a-z]' {'[0-9A-Z_a-z]'};
