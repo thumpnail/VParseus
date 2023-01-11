@@ -21,27 +21,27 @@ fn parser(tokenTuple []TokenTuple) []SyntaxNode { // []SyntaxNode <- list of rul
 	for idx in tokenTuple {
 		match idx.item1 {
 			.rule {
-				stk << SyntaxNode{value: idx.item2, s_type: .rule, children: [] }
+				stk << SyntaxNode{value: idx.item2, s_type: .rule, children: []}
 			}
 			.assign { // create Rule and add a Subrule
 				add_rule(mut ast, stk.pop())
 				add_subrule(mut ast, SyntaxNode{ value: idx.item2, s_type: .assign, children: []SyntaxNode{} })
 			}
 			.literal {
-				stk << (SyntaxNode{value: idx.item2, s_type: .rule, children: [] })
+				stk << (SyntaxNode{value: idx.item2, s_type: .rule, children: []})
 			}
 			.end {
 				//Add all stack items in correct order
 				add_item_m(mut ast, stk)
 				stk.clear()
-				add_subrule(mut ast,(SyntaxNode{value: idx.item2, s_type: .end, children: [] }))
+				add_subrule(mut ast,(SyntaxNode{value: idx.item2, s_type: .end, children: []}))
 			}
 			.opt_open {
-				stk << SyntaxNode{value: idx.item2, s_type: .optional, children: [] }
+				stk << SyntaxNode{value: idx.item2, s_type: .optional, children: []}
 				in_group += 1
 			}
 			.opt_close {
-				stk << SyntaxNode{value: idx.item2, s_type: .end, children: [] }
+				stk << SyntaxNode{value: idx.item2, s_type: .end, children: []}
 				mut tmp := []SyntaxNode{}
 				for stk.last().s_type != .optional {
 					tmp << stk.pop()
@@ -51,12 +51,12 @@ fn parser(tokenTuple []TokenTuple) []SyntaxNode { // []SyntaxNode <- list of rul
 				in_group -= 1
 			}
 			.opt_repeat_open {
-				stk << SyntaxNode{value: idx.item2, s_type: .repeat, children: [] }
+				stk << SyntaxNode{value: idx.item2, s_type: .repeat, children: []}
 				in_group += 1
 			}
 			.opt_repeat_close {
 				//mby closing bracket
-				stk << SyntaxNode{value: idx.item2, s_type: .end, children: [] }
+				stk << SyntaxNode{value: idx.item2, s_type: .end, children: []}
 				mut tmp := []SyntaxNode{}
 				for stk.last().s_type != .repeat {
 					tmp << stk.pop()
@@ -66,11 +66,11 @@ fn parser(tokenTuple []TokenTuple) []SyntaxNode { // []SyntaxNode <- list of rul
 				in_group -= 1
 			}
 			.group_open {
-				stk << SyntaxNode{value: idx.item2, s_type: .group, children: [] }
+				stk << SyntaxNode{value: idx.item2, s_type: .group, children: []}
 				in_group += 1
 			}
 			.group_close {
-				stk << SyntaxNode{value: idx.item2, s_type: .end, children: [] }
+				stk << SyntaxNode{value: idx.item2, s_type: .end, children: []}
 				mut tmp := []SyntaxNode{}
 				for stk.last().s_type != .group {
 					tmp << stk.pop()
