@@ -11,7 +11,7 @@ enum SyntaxType {
 	alt
 	end
 }
-pub struct EbnfDocument {
+struct EbnfDocument {
 	pub mut:
 	raw []string
 	rules []SyntaxNode
