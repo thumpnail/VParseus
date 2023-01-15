@@ -36,33 +36,3 @@ fn lexer(words []string) []TokenTuple {
 	inside_comment = false
 	return final
 }
-fn string_exist_of(src string, arr []u8) bool {
-	mut check := 0
-	for item in src {
-		if arr.contains(item) {
-			check++
-		}
-	}
-	return check == src.len // Exist Of
-}
-fn string_contains_u8(src string, arr []u8) bool {
-	mut check := 0
-	for item in src {
-		if arr.contains(item) {
-			check++
-		}
-	}
-	return check >= 0 // Contains
-}
-fn string_contains_string(src string, arr []string) bool {
-	return arr.contains(src)
-}
-fn string_equals(src string, arr []u8) bool {
-	mut check := 0
-	for c in arr {
-		if src == c.ascii_str() {
-			check++
-		}
-	}
-	return check == src.len
-}

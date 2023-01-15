@@ -13,8 +13,16 @@ enum SyntaxType {
 }
 pub struct EbnfDocument {
 	pub mut:
+	filename string
+
 	raw []string
 	rules []SyntaxNode
+
+	literals []string
+	keywords []string
+	operators []string
+	symbols []string
+	regex []string
 }
 struct SyntaxNode {
 	pub mut:

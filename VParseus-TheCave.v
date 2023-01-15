@@ -5,15 +5,18 @@ import json
 import io
 import regex
 
+struct VParseusContext {
+	pub mut:
+	args map[string][]string
+	ast ebnf.EbnfDocument
+}
 fn main() {
-	mut ctx := ebnf.VParseusContext{}
+	mut ctx := VParseusContext{}
 	dump(os.args)
 	if os.args.len > 1 {
 		ctx.args = args_to_map(os.args)
 		if ctx.args[''].len == 2 { // .\VParseus.exe script.ebnf ...
 			println('Reading')
-			ctx.ast.filename = os.file_name(ctx.args[''][1])
-			println('Filename: ${ctx.ast.filename}')
 			ctx.ast = ebnf.read_ebnf(ctx.args[''][1])
 			if 'json' in ctx.args {
 				//print json to file
@@ -28,7 +31,7 @@ fn main() {
 			}
 			if 'gen' in ctx.args {
 				println('Generating code')
-				ctx.build()
+				ebnf.build(mut ctx.ast)
 			}
 		} else {
 			println("Wrong amount of arguments!")

@@ -122,7 +122,7 @@ fn preprocessor(lines []string) []string {
 					}
 				}
 				if c == '\'' {
-					word += "\'"
+					word += '\''
 					i++
 					for i < line.len {
 						if line[i].ascii_str() != '\'' {
@@ -132,11 +132,11 @@ fn preprocessor(lines []string) []string {
 						}
 						i++
 					}
-					word += "\'"
+					word += '\''
 					continue
 				}
 				if c == '\"' {
-					word += "\""
+					word += '\''
 					i++
 					for i < line.len {
 						if line[i].ascii_str() != '\"' {
@@ -146,7 +146,7 @@ fn preprocessor(lines []string) []string {
 						}
 						i++
 					}
-					word += "\""
+					word += '\''
 					continue
 				}
 				if word != "" {
@@ -169,11 +169,4 @@ fn preprocessor(lines []string) []string {
 	}
 	return words
 }
-fn array_contains(c string, arr []string) bool {
-	for item in arr {
-		if item == c {
-			return true
-		}
-	}
-	return false
-}
+

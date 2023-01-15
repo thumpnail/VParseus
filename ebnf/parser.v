@@ -28,7 +28,7 @@ fn parser(tokenTuple []TokenTuple) []SyntaxNode { // []SyntaxNode <- list of rul
 				add_subrule(mut ast, SyntaxNode{ value: idx.item2, s_type: .assign, children: []SyntaxNode{} })
 			}
 			.literal {
-				stk << (SyntaxNode{value: idx.item2, s_type: .rule, children: []})
+				stk << (SyntaxNode{value: idx.item2, s_type: .literal, children: []})
 			}
 			.end {
 				//Add all stack items in correct order
