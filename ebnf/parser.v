@@ -1,8 +1,6 @@
 module ebnf
 
 import datatypes
-import io
-import rand
 type Stack = datatypes.Stack[SyntaxNode]
 struct ParserContext {
 	pub mut:

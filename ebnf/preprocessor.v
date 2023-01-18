@@ -111,10 +111,10 @@ fn preprocessor(lines []string) []string {
 				// word
 				word += c
 			}
-			if x := symbol_list[c] {
-				if y := symbol_list[next] {
+			if c in symbol_list {
+				if next in symbol_list {
 					tmp := "" + c + next
-					if z := operator_list[tmp] {
+					if tmp in operator_list {
 						words << tmp
 						word = ''
 						i += 2
@@ -163,6 +163,7 @@ fn preprocessor(lines []string) []string {
 		is_comment = false
 		is_string = false
 		is_char = false
+		isnumber = false
 		if word != "" {
 			words << (word)
 		}

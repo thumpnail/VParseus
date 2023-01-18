@@ -1,16 +1,8 @@
-module scretches
+module ebnf
 
-// start := { stat };
-//stat := data_decl
-//    | assign
-//    | decl;
-//data_decl := 'data' { expr_list } '{' decl '}';
-//assign := identifier [ ':' type ] := expr;
-//decl := identifier [ ':' type ];
-//expr := expr | expr '+' expr | expr '*' expr | number;
-//expr_list := expr { ',' expr };
-//identifier := '[a-zA-Z_0-9]';
-//number := ['-'] '[0-9]+';
+fn (mut ctx VParseusContext)build_lexer() string {
+	code := "
+module ${ctx.ast.filename}
 
 fn preprocessor(lines []string) []string {
 	mut is_comment := false
@@ -18,10 +10,10 @@ fn preprocessor(lines []string) []string {
 	mut is_char := false
 	mut is_number := false
 	mut words := []string{}
-	mut word := ""
-	// TODO: Tupel for errors
+	mut word := ''
+
 	for line in lines {
-		word = ""
+		word = ''
 		for i := 0; i < line.len; i+=1 {
 			//HEAD
 			mut c := line[i].ascii_str()
@@ -30,16 +22,16 @@ fn preprocessor(lines []string) []string {
 			if i + 1 < line.len {
 				next = line[i + 1].ascii_str()
 			} else {
-				next = "EOL"
+				next = 'EOL'
 			}
 			// string and chars
 			if is_string || is_char {
-				if c != '\"' {
+				if c != '\\\"' || c != '\\\'' {
 					word += c
 					continue
 				}
 			}
-			if c == '#' || is_comment {
+			if c == '<CommentSymbol>' || is_comment {
 				is_comment = true
 				continue
 			}
@@ -51,9 +43,9 @@ fn preprocessor(lines []string) []string {
 
 			if c == ' ' {
 				// whitespace
-				if word != "" {
+				if word != '' {
 					words << (word)
-					word = ""
+					word = ''
 				}
 			}
 
@@ -63,7 +55,7 @@ fn preprocessor(lines []string) []string {
 			}
 			if x := symbol_list[c] {
 				if y := symbol_list[next] {
-					tmp := "" + c + next
+					tmp := '' + c + next
 					if z := operator_list[tmp] {
 						words << tmp
 						word = ''
@@ -71,49 +63,49 @@ fn preprocessor(lines []string) []string {
 						continue
 					}
 				}
-				if c == '\'' {
-					word += '\''
+				if c == '\\\'' {
+					word += '\\\''
 					i++
 					for i < line.len {
-						if line[i].ascii_str() != '\'' {
+						if line[i].ascii_str() != '\\\'' {
 							word += line[i].ascii_str()
 						} else {
 							break
 						}
 						i++
 					}
-					word += '\''
+					word += '\\\''
 					continue
 				}
-				if c == '\"' {
-					word += '\''
+				if c == '\\\"' {
+					word += '\\\''
 					i++
 					for i < line.len {
-						if line[i].ascii_str() != '\"' {
+						if line[i].ascii_str() != '\\\"' {
 							word += line[i].ascii_str()
 						} else {
 							break
 						}
 						i++
 					}
-					word += '\''
+					word += '\\\''
 					continue
 				}
-				if word != "" {
+				if word != '' {
 					words << word
-					word = ""
+					word = ''
 				}
 				word += c
-				if word != "" {
+				if word != '' {
 					words << word
-					word = ""
+					word = ''
 				}
 			}
 		}
 		is_comment = false
 		is_string = false
 		is_char = false
-		if word != "" {
+		if word != '' {
 			words << (word)
 		}
 	}
@@ -144,9 +136,9 @@ fn lexer(words []string) []TokenTuple {
 
 		if tok := operator_list[str] {
 			token = tok
-		} else if str.contains("\"") { // strings and chars
+		} else if str.contains('\\\"') { // strings and chars
 			token = TokenType.literal
-		} else if str.contains('\'') { // todo: workaround based on ebnf
+		} else if str.contains('\\\'') { // todo: workaround based on ebnf
 			token = TokenType.literal
 		} else {
 			token = TokenType.rule
@@ -160,9 +152,11 @@ fn lexer(words []string) []TokenTuple {
 			continue
 		}
 		final << TokenTuple{token, str}
-		str = ""
+		str = ''
 	}
 	// CommentFix
 	inside_comment = false
 	return final
+}"
+	return code
 }

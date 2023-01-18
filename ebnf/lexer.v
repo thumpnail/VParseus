@@ -1,6 +1,5 @@
 module ebnf
 
-import context
 struct TokenTuple {
 	item1 TokenType
 	item2 string

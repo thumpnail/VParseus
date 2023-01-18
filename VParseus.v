@@ -2,30 +2,34 @@ module main
 import ebnf
 import os
 import json
-import io
-import regex
 
 fn main() {
 	mut ctx := ebnf.VParseusContext{}
-	dump(os.args)
 	if os.args.len > 1 {
 		ctx.args = args_to_map(os.args)
 		if ctx.args[''].len == 2 { // .\VParseus.exe script.ebnf ...
 			println('Reading')
 			ctx.ast.filename = os.file_name(ctx.args[''][1])
-			println('Filename: ${ctx.ast.filename}')
-			ctx.ast = ebnf.read_ebnf(ctx.args[''][1])
+			ctx.read_ebnf(ctx.args[''][1])
+			//Finalize
+			if 'final' in ctx.args {
+				println('Creating finalized ebnf (with tokens)')
+				ctx.finalize(ctx.args[''][1], ctx.args['final'][0])
+			}
+			//Export to Json file
 			if 'json' in ctx.args {
 				//print json to file
 				println('Outputting to ${ctx.args[''][1]}.json')
 				json := json.encode_pretty(ctx.ast)
 				os.write_file('${ctx.args[''][1]}.json', json) or { println("Failed to write file") }
 			}
+			//Dump out to stdout
 			if 'dump' in ctx.args {
 				//print json to file
 				println('Dumping to stdout')
 				dump(ctx.ast)
 			}
+			//Generate parser
 			if 'gen' in ctx.args {
 				println('Generating code')
 				ctx.build()
@@ -58,7 +62,9 @@ fn print_help() {
 	help := [
 		"usage: VParseus <ebnf file> [options]\n"
 		"\t options:\n"
+		"\t\t -final -> extract all literals into their own rules\n"
 		"\t\t -json -> to export to json\n"
+		"\t\t -dump -> dump the ebnf document to std out\n"
 		"\t\t -gen 	-> generate parser\n"
 		"\t\t TODO\n"
 	]
