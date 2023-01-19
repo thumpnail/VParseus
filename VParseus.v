@@ -9,13 +9,22 @@ fn main() {
 		ctx.args = args_to_map(os.args)
 		if ctx.args[''].len == 2 { // .\VParseus.exe script.ebnf ...
 			println('Reading')
+			mut ebnf_lines := []string{}
 			ctx.ast.filename = os.file_name(ctx.args[''][1])
-			ctx.read_ebnf(ctx.args[''][1])
+			ebnf_lines << os.read_lines(ctx.args[''][1]) or { panic("Could not read file...")}
 			//Finalize
 			if 'final' in ctx.args {
-				println('Creating finalized ebnf (with tokens)')
-				ctx.finalize(ctx.args[''][1], ctx.args['final'][0])
+				if ctx.args['final'].len > 0 {
+					println('Creating finalized ebnf (with tokens)')
+					//read the given tokens.ebnf and append to the input.ebnf stream
+					ebnf_lines << os.read_lines(ctx.args['final'][0]) or { panic("Could not read file...")}
+				} else {
+					println('Creating finalized ebnf (without tokens)')
+					//Resolve tokens inside input.ebnf and create new rules
+					ctx.finalize(ctx.args[''][1], ctx.args['final'][0])
+				}
 			}
+			ctx.read_ebnf(ebnf_lines)
 			//Export to Json file
 			if 'json' in ctx.args {
 				//print json to file

@@ -5,8 +5,8 @@ pub struct VParseusContext {
 	args map[string][]string
 	ast EbnfDocument
 }
-pub fn (mut ctx VParseusContext) read_ebnf(filename string) {
-	document_lines := os.read_lines(filename) or { panic("Could not read file...")}
+pub fn (mut ctx VParseusContext) read_ebnf(lines []string) {
+	document_lines := lines
 	preprocessed := preprocessor(document_lines)
 	lexed := lexer(preprocessed)
 	ast := parser(lexed)
