@@ -12,7 +12,7 @@ fn main() {
 			mut ebnf_lines := []string{}
 			ctx.ast.filename = os.file_name(ctx.args[''][1])
 			ebnf_lines << os.read_lines(ctx.args[''][1]) or { panic("Could not read file...")}
-			//Finalize
+			//Finalize //Add token rules for easier parsing
 			if 'final' in ctx.args {
 				if ctx.args['final'].len > 0 {
 					println('Creating finalized ebnf (with tokens)')
