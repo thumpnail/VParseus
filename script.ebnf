@@ -11,7 +11,7 @@ stat := assignment
 	| 'continue'
     | ';';
 
-dataDecl := 'data' Name {':' type} {block};
+dataDecl := 'data' Name {':' type} block;
 
 useDecl := 'use' {paramList} block;
 
@@ -25,7 +25,7 @@ conditional := 'if' '(' expr ')' block {'elseif' '(' expr ')' block} {'else' blo
 
 assignment := Name ':=' expr;
 
-block := '{' {stat} '}';
+block := '{' { stat } '}';
 
 paramList := Name ':' type {',' Name ':' type};
 
@@ -39,7 +39,7 @@ expr := expr ( '||' expr )
     | expr ('*'|'/'|'%' expr)
     | '-' expr
     | '(' expr ')'
-    | Number
+    | number
     | String
     | functionCall
     | Name;
@@ -51,6 +51,9 @@ type := 'number'
     | 'any'
     | Name;
 
-Number := '[0-9]*';
-String := '"' '[.*]?' '"';
-Name := '[A-Z_a-z]' {'[0-9A-Z_a-z]'};
+number := [ '-' ] digit { digit } [ '.' { digit } ];
+digit := '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
+String := '"' * '"';
+Name := letter { '_' | letter | digit };
+#char := ( 65 .. 90 ) | ( 97 .. 122 ) | ( 95 );
+letter := 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm' | 'n' | 'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z' | 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L' | 'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z';
