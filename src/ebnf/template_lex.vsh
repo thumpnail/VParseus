@@ -1,6 +1,3 @@
-
-module main
-
 enum TokenType {
 	unknown
 	tk_semicolon
@@ -47,13 +44,20 @@ enum TokenType {
 
 }
 const(
+	//create arrays from ebnf
+	all_digit = [
+		'0','1','2','3','4','5','6','7','8','9',
+	]
+	all_letter = [
+		'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z',
+	]
 
 	all_chars = [
 		'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',
 		'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'
 	]
 	all_num = [
-		'0','1','2','3','4','5','6','7','8','9','../src/test'
+		'0','1','2','3','4','5','6','7','8','9','.'
 	]
 	symbol_list = {
 		';': TokenType.tk_semicolon
@@ -72,7 +76,7 @@ const(
 		'*': TokenType.tk_asterisk
 		'/': TokenType.tk_slash
 		'%': TokenType.tk_percent
-		'../src/test': TokenType.tk_dot
+		'.': TokenType.tk_dot
 		'"': TokenType.tk_double_quote
 		'_': TokenType.tk_underscore
 	}
@@ -117,7 +121,7 @@ const(
 		'*': TokenType.tk_asterisk
 		'/': TokenType.tk_slash
 		'%': TokenType.tk_percent
-		'../src/test': TokenType.tk_dot // FIXME
+		'.': TokenType.tk_dot
 		'"': TokenType.tk_double_quote
 		'_': TokenType.tk_underscore
 	}
@@ -139,6 +143,8 @@ fn preprocessor(script_lines []string) []string {
 			//BODY
 			if i + 1 < line.len {
 				next = line[i + 1].ascii_str()
+			} else {
+				//next = 'EOL'
 			}
 			// string and chars
 			if is_string || is_char {
@@ -147,12 +153,12 @@ fn preprocessor(script_lines []string) []string {
 					continue
 				}
 			}
-			if c == '#' || is_comment {
+			if c == 'fn () string' || is_comment {
 				is_comment = true
 				continue
 			}
-			//TODO: Number
-			if c == '-' && all_num.contains(next) || all_num.contains(c) || all_num.contains(next) && c == '.' {
+
+			if c == '-' && all_num.contains(next) {
 				word += c
 				continue
 			}
@@ -229,10 +235,8 @@ fn preprocessor(script_lines []string) []string {
 	return words
 }
 struct TokenTuple {
-	token TokenType
-	value string
-	line int
-	pos int
+	item1 TokenType
+	item2 string
 }
 
 fn lexer(words []string) []TokenTuple {
@@ -243,10 +247,13 @@ fn lexer(words []string) []TokenTuple {
 		mut str := words[i]
 		// is digit
 		if words[i].contains_only('-1234567890') {
+			//is no floating point
 			token = TokenType.unknown
 		} else if words[i].contains_only('-1234567890.') {
+			//is floating point
 			token = TokenType.unknown
 			if !words[i].contains_only('-1234567890') {
+				//anything else or just dot
 				token = TokenType.unknown
 			}
 		} else {
@@ -271,20 +278,19 @@ fn lexer(words []string) []TokenTuple {
 			}
 		}
 		final << TokenTuple{
-			token: token
-			value: str
+			item1: token
+			item2: str
 		}
 		str = ''
 	}
 	inside_comment = false
 	mut remlist := []TokenTuple{}
-	// TODO: multiline comments
 	for item in final {
-		if item.value.contains('\n') {
+		if item.item2.contains('\n') {
 			inside_comment = false
-		} else if item.value == ('\n') {
+		} else if item.item2 == ('\n') {
 			remlist << item
-		} else if item.value == '#' {
+		} else if item.item2 == '#' {
 			remlist << item
 			inside_comment = true
 		} else if inside_comment {
@@ -293,5 +299,4 @@ fn lexer(words []string) []TokenTuple {
 	}
 	return final
 }
-
 

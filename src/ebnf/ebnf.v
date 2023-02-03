@@ -5,7 +5,6 @@ pub struct VParseusContext {
 	args map[string][]string
 	ast EbnfDocument
 	//
-	code_gen_stack []int
 }
 pub fn (mut ctx VParseusContext) read_ebnf(lines []string) {
 	document_lines := lines.clone()

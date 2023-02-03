@@ -79,6 +79,7 @@ fn parser(tokenTuple []TokenTuple) []SyntaxNode { // []SyntaxNode <- list of rul
 			}
 			.alt {
 				// Add all elements from before
+
 				if in_group > 0 {
 					stk << SyntaxNode{ value: idx.item2, s_type: .alt, children: []SyntaxNode{} }
 				} else {

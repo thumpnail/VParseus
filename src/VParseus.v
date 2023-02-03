@@ -13,6 +13,7 @@ fn main() {
 			ctx.ast.filename = os.file_name(ctx.args[''][1])
 			ebnf_lines << os.read_lines(ctx.args[''][1]) or { panic("Could not read file...")}
 			//Finalize //Add token rules for easier parsing
+			// TODO: add option fot changing lexer generation method
 			if 'final' in ctx.args {
 				if ctx.args['final'].len > 0 {
 					println('Creating finalized ebnf (without tokens)')
@@ -60,6 +61,14 @@ fn main() {
 				println('Generating code')
 				ctx.build()
 			}
+			if 'help' in ctx.args {
+				print_help()
+			}
+			if 'test' in ctx.args {
+				println('generating test file for testing the lexer and parser')
+				println('not implemented')
+				print_help()
+			}
 		} else {
 			println("Wrong amount of arguments!")
 			print_help()
@@ -86,16 +95,20 @@ fn args_to_map(args []string) map[string][]string {
 }
 fn print_help() {
 	help := [
-		"usage: VParseus <ebnf file> [options]\n"
-		"\t options:\n"
-		"\t\t -final \t\textract all literals into their own rules\n"
-		"\t\t -final <ebnf file> \textract all literals from the given file into their own rules\n"
-		"\t\t -json  \t\tto export to json\n"
-		"\t\t -dump  \t\tdump the ebnf document to std out\n"
-		"\t\t -gen 	 \t\tgenerate parser\n"
-		"\t\t TODO\n"
+		"usage: VParseus <ebnf file> [options]"
+		"	options:"
+		"		-final 	extract all literals into their own rules"
+		"		-final 	<ebnf file> extract all literals from the given file into their own rules"
+		"		-out	<ebnf file> write ebnf file after modifications are being done e.g. -final"
+		"		-json 	to export to json"
+		"		-dump 	dump the ebnf document to std out"
+		"		-gen 	generate parser"
+		"		-help	display help"
+		"		-test	puts into path a v file containing main() to test lexer and parser"
+		"		-mod	sets the module name and folder name"
+		"	TODO"
 	]
 	for h in help {
-		print(h)
+		println(h)
 	}
 }

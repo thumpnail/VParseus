@@ -11,10 +11,10 @@ pub fn (mut ctx VParseusContext)build() {
 	if ctx.args['gen'].len == 1 {
 		ctx.ast.filename = ctx.args['gen'][0]
 		os.mkdir(ctx.ast.filename) or {println('Failed Creating Dir')}
-		os.write_file(ctx.args['gen'][0]+'\\'+ctx.args['gen'][0] + '_lex.v', ctx.build_lexer_strict()) or {println('failed writing code gen file')}
+		os.write_file(ctx.args['gen'][0]+'\\'+ctx.args['gen'][0] + '_lex.v', ctx.build_lexer_v2()) or {println('failed writing code gen file')}
 	} else {
 		os.mkdir(ctx.ast.filename) or {println('Failed Creating Dir')}
-		os.write_file(ctx.ast.filename+'\\'+ctx.ast.filename + '_lex.v', ctx.build_lexer_strict()) or {println('failed writing code gen file')}
+		os.write_file(ctx.ast.filename+'\\'+ctx.ast.filename + '_lex.v', ctx.build_lexer_v2()) or {println('failed writing code gen file')}
 	}
 	println('code_gen is still WIP')
 	return

@@ -1,13 +1,18 @@
 module ebnf
-// build_lexer_strict strict version of lexer generator with custom number detection
+// build_lexer_strict contains bugs that are currently unfixable
+// -> strict version of lexer generator with custom number detection
+[deprecated: 'use build_lexer_v2 instead']
 fn (mut ctx VParseusContext)build_lexer_strict() string {
 	mut code := "
 module ${ctx.args['gen'][0]}
 
-enum TokenType {${ctx.get_tokens()}
+enum TokenType {
+	number${ctx.get_tokens()}
 }
 const(
-
+	//create arrays from ebnf
+${ctx.get_char_arrays()}
+	//internal helper arrays
 	all_chars = [
 		'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',
 		'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'
@@ -49,7 +54,7 @@ fn preprocessor(script_lines []string) []string {
 					continue
 				}
 			}
-			if c == '${ctx.get_comment_symbol}' || is_comment {
+			if c == '#' || is_comment {
 				is_comment = true
 				continue
 			}
@@ -144,13 +149,13 @@ fn lexer(words []string) []TokenTuple {
 		// is digit
 		if words[i].contains_only('-1234567890') {
 			//is no floating point
-			token = TokenType.unknown
+			token = TokenType.number
 		} else if words[i].contains_only('-1234567890.') {
 			//is floating point
-			token = TokenType.unknown
+			token = TokenType.number
 			if !words[i].contains_only('-1234567890') {
 				//anything else or just dot
-				token = TokenType.unknown
+				token = TokenType.number
 			}
 		} else {
 			// special keyword_list
@@ -173,10 +178,7 @@ fn lexer(words []string) []TokenTuple {
 				token = TokenType.unknown
 			}
 		}
-		final << TokenTuple{
-			item1: token
-			item2: str
-		}
+		final << TokenTuple{ item1: token, item2: str }
 		str = ''
 	}
 	inside_comment = false
@@ -198,60 +200,4 @@ fn lexer(words []string) []TokenTuple {
 
 "
 	return code
-}
-
-fn (ctx VParseusContext) get_tokens() string {
-	mut result := '\n\tunknown\n\t'
-	for key in ctx.ast.rules {
-		if key.children.len == 2 && key.children[0].children.len == 1 && key.children[0].children[0].s_type == .literal {
-			result += key.value + '\n\t'
-		}
-	}
-	return result
-}
-fn (ctx VParseusContext) get_symbol_map() string {
-	mut result := ''
-	for rule in ctx.ast.rules {
-		rule_value, rule_name := rule.children[0].children[0].value, rule.value
-		if rule.children.len == 2 && rule.children[0].children.len == 1 && rule.children[0].children[0].s_type == .literal && rule_value.substr(1, rule_value.len-1) in ctx.ast.symbols {
-			result += "\n\t\t${rule_value}: " + "TokenType." + rule_name
-		}
-	}
-	return result
-}
-fn (ctx VParseusContext) get_keyword_map() string {
-	mut result := ''
-	for rule in ctx.ast.rules {
-		rule_value, rule_name := rule.children[0].children[0].value, rule.value
-		syntax_rules := rule.children[0].children
-		if  rule.children.len == 2 && syntax_rules.len == 1 && syntax_rules[0].s_type == .literal && rule_value.substr(1, rule_value.len-1) in ctx.ast.keywords && rule_value.len > 2 {
-			result += "\n\t\t${rule_value}: " + "TokenType." + rule_name
-		}
-	}
-	return result}
-fn (ctx VParseusContext) get_operator_map() string {
-	mut result := ''
-	for rule in ctx.ast.rules {
-		rule_value, rule_name := rule.children[0].children[0].value, rule.value
-		if rule.children.len == 2 && rule.children[0].children.len == 1 && rule.children[0].children[0].s_type == .literal && rule_value.substr(1, rule_value.len-1) in ctx.ast.operators {
-			result += "\n\t\t${rule_value}: " + "TokenType." + rule_name
-		}
-	}
-	return result}
-fn (ctx VParseusContext) get_comment_symbol() string {
-	return '#'
-}
-fn (ctx VParseusContext) get_symbol_list() string {
-	mut result := ''
-	for key in ctx.ast.symbols {
-		result += "'${key}',"
-	}
-	return result.substr(0,result.len-1)
-}
-fn (ctx VParseusContext) get_operator_list() string {
-	mut result := ''
-	for key in ctx.ast.operators {
-		result += "'${key}',"
-	}
-	return result.substr(0,result.len-1)
 }
