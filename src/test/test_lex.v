@@ -17,12 +17,6 @@ pub mut:
 
 enum TokenType {
 	unknown
-	tk_equals
-	tk_colon
-	tk_colon_equals
-	tk_var
-	tk_number
-	tk_any
 }
 
 fn parse(words []string) []Token {
@@ -33,186 +27,6 @@ fn parse(words []string) []Token {
 }
 
 // generate recursive decent lexing
-fn parse_start() {
-	//-assign-
-	gen_repeat
-
-	//-end-
-}
-
-fn parse_stat() {
-	//-assign-
-	match peek() {
-		assign {
-			assign()
-		}
-		//-alt Header-
-		decl {
-			decl()
-		}
-		else {
-			error('expected stat')
-		}
-	}
-	//-end-
-}
-
-fn parse_assign() {
-	//-assign-
-	name()
-	tk_equals()
-	value()
-
-	//-end-
-}
-
-fn parse_decl() {
-	//-assign-
-	match peek() {
-		tk_var {
-			tk_var()
-		}
-		//-alt Header-
-		tk_var {
-			tk_var()
-		}
-		else {
-			error('expected decl')
-		}
-	}
-	//-end-
-}
-
-fn parse_value() {
-	//-assign-
-	match peek() {
-		'0' {
-			consume('0')
-		}
-		//-alt Header-
-		'1' {
-			consume('1')
-		}
-		//-alt Header-
-		'2' {
-			consume('2')
-		}
-		//-alt Header-
-		'3' {
-			consume('3')
-		}
-		//-alt Header-
-		'4' {
-			consume('4')
-		}
-		//-alt Header-
-		'5' {
-			consume('5')
-		}
-		//-alt Header-
-		'6' {
-			consume('6')
-		}
-		//-alt Header-
-		'7' {
-			consume('7')
-		}
-		//-alt Header-
-		'8' {
-			consume('8')
-		}
-		//-alt Header-
-		'9' {
-			consume('9')
-		}
-		else {
-			error('expected value')
-		}
-	}
-	//-end-
-}
-
-fn parse_name() {
-	//-assign-
-	match peek() {
-		'a' {
-			consume('a')
-		}
-		//-alt Header-
-		'b' {
-			consume('b')
-		}
-		//-alt Header-
-		'c' {
-			consume('c')
-		}
-		//-alt Header-
-		'd' {
-			consume('d')
-		}
-		//-alt Header-
-		'e' {
-			consume('e')
-		}
-		else {
-			error('expected name')
-		}
-	}
-	//-end-
-}
-
-fn parse_type() {
-	//-assign-
-	match peek() {
-		tk_number {
-			tk_number()
-		}
-		//-alt Header-
-		tk_any {
-			tk_any()
-		}
-		else {
-			error('expected type')
-		}
-	}
-	//-end-
-}
-
-fn parse_tk_equals() {
-	//-assign-
-	consume('=')
-	//-end-
-}
-
-fn parse_tk_colon() {
-	//-assign-
-	consume(':')
-	//-end-
-}
-
-fn parse_tk_colon_equals() {
-	//-assign-
-	consume(':=')
-	//-end-
-}
-
-fn parse_tk_var() {
-	//-assign-
-	consume('var')
-	//-end-
-}
-
-fn parse_tk_number() {
-	//-assign-
-	consume('number')
-	//-end-
-}
-
-fn parse_tk_any() {
-	//-assign-
-	consume('any')
-	//-end-
-}
 
 // helper functions
 // consume
@@ -239,3 +53,313 @@ fn (mut ctx ParserContext) next() string {
 }
 
 // usw
+fn @start() {
+	// condition
+	for {
+		@stat()
+	}
+}
+
+fn @stat() {
+	@datadecl()
+
+	// OR//
+	@assign()
+
+	// OR//
+	@decl()
+}
+
+fn @datadecl() {
+	consume('data')
+
+	@identifier()
+
+	consume('{')
+
+	@decl()
+
+	consume('}')
+}
+
+fn @assign() {
+	@identifier()
+
+	consume(':')
+
+	@type()
+
+	consume(':=')
+
+	@expr()
+}
+
+fn @decl() {
+	@identifier()
+
+	consume(':')
+
+	@type()
+}
+
+fn @expr() {
+	@expr()
+
+	// OR//
+	@expr()
+
+	consume('+')
+
+	@expr()
+
+	// OR//
+	@expr()
+
+	consume('*')
+
+	@expr()
+
+	// OR//
+	@expr()
+
+	consume('++')
+
+	// OR//
+	@expr()
+
+	consume('--')
+
+	// OR//
+	@number()
+}
+
+fn @exprlist() {
+	@expr()
+
+	// condition
+	for {
+		consume(',')
+
+		@expr()
+	}
+}
+
+fn @identifier() {
+	@letter()
+
+	// condition
+	for {
+		@letter()
+
+		// OR//
+
+		@digit()
+	}
+}
+
+fn @number() {
+	consume('-')
+
+	// condition
+	for {
+		@digit()
+	}
+}
+
+fn @type() {
+	consume('number')
+
+	// OR//
+	consume('string')
+}
+
+fn @digit() {
+	consume('0')
+
+	// OR//
+	consume('1')
+
+	// OR//
+	consume('2')
+
+	// OR//
+	consume('3')
+
+	// OR//
+	consume('4')
+
+	// OR//
+	consume('5')
+
+	// OR//
+	consume('6')
+
+	// OR//
+	consume('7')
+
+	// OR//
+	consume('8')
+
+	// OR//
+	consume('9')
+}
+
+fn @letter() {
+	consume('a')
+
+	// OR//
+	consume('b')
+
+	// OR//
+	consume('c')
+
+	// OR//
+	consume('d')
+
+	// OR//
+	consume('e')
+
+	// OR//
+	consume('f')
+
+	// OR//
+	consume('g')
+
+	// OR//
+	consume('h')
+
+	// OR//
+	consume('i')
+
+	// OR//
+	consume('j')
+
+	// OR//
+	consume('k')
+
+	// OR//
+	consume('l')
+
+	// OR//
+	consume('m')
+
+	// OR//
+	consume('n')
+
+	// OR//
+	consume('o')
+
+	// OR//
+	consume('p')
+
+	// OR//
+	consume('q')
+
+	// OR//
+	consume('r')
+
+	// OR//
+	consume('s')
+
+	// OR//
+	consume('t')
+
+	// OR//
+	consume('u')
+
+	// OR//
+	consume('v')
+
+	// OR//
+	consume('w')
+
+	// OR//
+	consume('x')
+
+	// OR//
+	consume('y')
+
+	// OR//
+	consume('z')
+
+	// OR//
+	consume('_')
+
+	// OR//
+	consume('A')
+
+	// OR//
+	consume('B')
+
+	// OR//
+	consume('C')
+
+	// OR//
+	consume('D')
+
+	// OR//
+	consume('E')
+
+	// OR//
+	consume('F')
+
+	// OR//
+	consume('G')
+
+	// OR//
+	consume('H')
+
+	// OR//
+	consume('I')
+
+	// OR//
+	consume('J')
+
+	// OR//
+	consume('K')
+
+	// OR//
+	consume('L')
+
+	// OR//
+	consume('M')
+
+	// OR//
+	consume('N')
+
+	// OR//
+	consume('O')
+
+	// OR//
+	consume('P')
+
+	// OR//
+	consume('Q')
+
+	// OR//
+	consume('R')
+
+	// OR//
+	consume('S')
+
+	// OR//
+	consume('T')
+
+	// OR//
+	consume('U')
+
+	// OR//
+	consume('V')
+
+	// OR//
+	consume('W')
+
+	// OR//
+	consume('X')
+
+	// OR//
+	consume('Y')
+
+	// OR//
+	consume('Z')
+}
