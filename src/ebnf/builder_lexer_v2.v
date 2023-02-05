@@ -6,6 +6,7 @@ module ebnf
 fn (mut ctx VParseusContext) build_lexer_v2() string {
 	mut result := "
 module main
+import regex
 struct ParserContext {
 	pub:
 	source []string
@@ -33,16 +34,14 @@ fn parse(words []string) []Token {
 +"
 //helper functions
 //consume
-fn (mut ctx ParserContext) consume(value string) bool {
+fn (mut ctx ParserContext) consume(value string) ! {
 	nxt := value
 	if rgx := regex.regex_base(value) {
 		// is regex
-		return true
 	} else if ctx.peek() == value {
 		ctx.next()
-		return true
 	}
-	panic('Expected ' + value + ' got ' + nxt)
+	error('Expected ' + value + ' got ' + nxt)
 }
 //peek
 fn (mut ctx ParserContext) peek() string {
@@ -67,36 +66,65 @@ fn (ctx VParseusContext) gen_src() string {
 fn (node SyntaxNode) gen_src(depth int) string {
 	mut sb := StringBuilder{}
 	mut repeat := 0
-	if depth == 0 {
-		sb.append_line('fn @${node.value}() {')
-	} else {
-		match node.s_type {
-			.rule {
-				sb.append_line('@${node.value}()')
+	mut jumper := 0
+	match node.s_type {
+		.rule {
+			if depth == 0 {
+				sb.append_line('fn @${node.value}() bool {')
+				for i in jumper .. node.children.len {
+					sb.append_line(node.children[i].gen_src(depth+1))
+				}
+				sb.append_line('return true }')
+			} else {
+				sb.append_line('@${node.value}() or { return false }')
 			}
-			.group {}
-			.repeat {
-				sb.append_line('for /* condition */{')
-				repeat++
-			}
-			.optional {}
-			.literal {
-				sb.append_line('consume(${node.value})')
-			}
-			.assign {}
-			.alt {
-				sb.append_line('//OR//')
-			}
-			.end {}
-			else {error('wrong token type')}
 		}
-	}
-	for child in node.children {
-		sb.append_line(child.gen_src(depth+1))
-	}
-	if depth == 0 || repeat > 0 {
-		if repeat > 0 {repeat -= 0}
-		sb.append_line('}')
+		.group {
+			if node.children.contains(SyntaxNode{value: '|',s_type: .alt,children: []}) {
+				sb.append_line('/*if*/{')
+				for i in jumper .. node.children.len {
+					sb.append_line(node.children[i].gen_src(depth+1))
+				}
+				sb.append_line('}')
+			} else {
+				for child in node.children {
+					//add match if there are alt's upcoming
+					sb.append_line(child.gen_src(depth+1))
+				}
+			}
+		}
+		.repeat {
+			sb.append_line('for ${node.children[jumper++].gen_src(depth+1)} {')
+			//add match if there are alt's upcoming
+			for i in jumper .. node.children.len {
+				sb.append_line(node.children[i].gen_src(depth+1))
+			}
+			repeat++
+			sb.append_line('}')
+		}
+		.optional {
+			//add match if there are alt's upcoming
+			for child in node.children {
+				sb.append_line(child.gen_src(depth+1))
+			}
+		}
+		.literal {
+			sb.append_line('consume(${node.value}) or { return false }')
+		}
+		.assign {
+			//add match if there are alt's upcoming
+			for key in node.children {
+				sb.append_line(key.gen_src(depth+1))
+			}
+		}
+		.alt {
+			sb.append_line('//OR')
+			for key in node.children {
+				sb.append_line(key.gen_src(depth+1))
+			}
+		}
+		.end {}
+		else {error('wrong token type')}
 	}
 	return sb.get_final()
 }

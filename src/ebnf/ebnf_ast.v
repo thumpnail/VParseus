@@ -26,7 +26,7 @@ pub struct EbnfDocument {
 	operators []string
 	regex []string
 }
-struct SyntaxNode {
+pub struct SyntaxNode {
 	pub mut:
 	value string
 	s_type SyntaxType

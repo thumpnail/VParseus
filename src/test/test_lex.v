@@ -1,5 +1,7 @@
 module main
 
+import regex
+
 struct ParserContext {
 pub:
 	source []string
@@ -30,14 +32,12 @@ fn parse(words []string) []Token {
 
 // helper functions
 // consume
-fn (mut ctx ParserContext) consume(value string) bool {
+fn (mut ctx ParserContext) consume(value string) ! {
 	nxt := value
 	if rgx := regex.regex_base(value) {
 		// is regex
-		return true
 	} else if ctx.peek() == value {
 		ctx.next()
-		return true
 	}
 	panic('Expected ' + value + ' got ' + nxt)
 }
@@ -53,313 +53,206 @@ fn (mut ctx ParserContext) next() string {
 }
 
 // usw
-fn @start() {
-	// condition
-	for {
-		@stat()
+fn @start() bool {
+	for @stat() or { return false } {
 	}
+
+	return true
 }
 
-fn @stat() {
-	@datadecl()
+fn @stat() bool {
+	// Match
+	{
+		@assign() or { return false }
 
-	// OR//
-	@assign()
+		// OR
 
-	// OR//
-	@decl()
-}
+		@decl() or { return false }
 
-fn @datadecl() {
-	consume('data')
+		// OR
 
-	@identifier()
+		@fndecl() or { return false }
 
-	consume('{')
+		// OR
 
-	@decl()
-
-	consume('}')
-}
-
-fn @assign() {
-	@identifier()
-
-	consume(':')
-
-	@type()
-
-	consume(':=')
-
-	@expr()
-}
-
-fn @decl() {
-	@identifier()
-
-	consume(':')
-
-	@type()
-}
-
-fn @expr() {
-	@expr()
-
-	// OR//
-	@expr()
-
-	consume('+')
-
-	@expr()
-
-	// OR//
-	@expr()
-
-	consume('*')
-
-	@expr()
-
-	// OR//
-	@expr()
-
-	consume('++')
-
-	// OR//
-	@expr()
-
-	consume('--')
-
-	// OR//
-	@number()
-}
-
-fn @exprlist() {
-	@expr()
-
-	// condition
-	for {
-		consume(',')
-
-		@expr()
+		@fncall() or { return false }
 	}
+	return true
 }
 
-fn @identifier() {
-	@letter()
+fn @assign() bool {
+	@name() or { return false }
 
-	// condition
-	for {
-		@letter()
+	consume('=') or { return false }
 
-		// OR//
+	@value() or { return false }
 
-		@digit()
+	return true
+}
+
+fn @decl() bool {
+	// Match
+	{
+		consume('var') or { return false }
+
+		@name() or { return false }
+
+		consume(':') or { return false }
+
+		@type() or { return false }
+
+		consume('=') or { return false }
+
+		@value() or { return false }
+
+		// OR
+
+		consume('var') or { return false }
+
+		@name() or { return false }
+
+		consume(':=') or { return false }
+
+		@value() or { return false }
 	}
+	return true
 }
 
-fn @number() {
-	consume('-')
+fn @value() bool {
+	// Match
+	{
+		consume('0') or { return false }
 
-	// condition
-	for {
-		@digit()
+		// OR
+
+		consume('1') or { return false }
+
+		// OR
+
+		consume('2') or { return false }
+
+		// OR
+
+		consume('3') or { return false }
+
+		// OR
+
+		consume('4') or { return false }
+
+		// OR
+
+		consume('5') or { return false }
+
+		// OR
+
+		consume('6') or { return false }
+
+		// OR
+
+		consume('7') or { return false }
+
+		// OR
+
+		consume('8') or { return false }
+
+		// OR
+
+		consume('9') or { return false }
 	}
+	return true
 }
 
-fn @type() {
-	consume('number')
+fn @name() bool {
+	// Match
+	{
+		consume('a') or { return false }
 
-	// OR//
-	consume('string')
+		// OR
+
+		consume('b') or { return false }
+
+		// OR
+
+		consume('c') or { return false }
+
+		// OR
+
+		consume('d') or { return false }
+
+		// OR
+
+		consume('e') or { return false }
+	}
+	return true
 }
 
-fn @digit() {
-	consume('0')
+fn @type() bool {
+	// Match
+	{
+		consume('number') or { return false }
 
-	// OR//
-	consume('1')
+		// OR
 
-	// OR//
-	consume('2')
-
-	// OR//
-	consume('3')
-
-	// OR//
-	consume('4')
-
-	// OR//
-	consume('5')
-
-	// OR//
-	consume('6')
-
-	// OR//
-	consume('7')
-
-	// OR//
-	consume('8')
-
-	// OR//
-	consume('9')
+		consume('any') or { return false }
+	}
+	return true
 }
 
-fn @letter() {
-	consume('a')
+fn @fndecl() bool {
+	consume('fnc') or { return false }
 
-	// OR//
-	consume('b')
+	@name() or { return false }
 
-	// OR//
-	consume('c')
+	consume(':') or { return false }
 
-	// OR//
-	consume('d')
+	@type() or { return false }
 
-	// OR//
-	consume('e')
+	consume('(') or { return false }
 
-	// OR//
-	consume('f')
+	@arglist() or { return false }
 
-	// OR//
-	consume('g')
+	consume(')') or { return false }
 
-	// OR//
-	consume('h')
+	consume('{') or { return false }
 
-	// OR//
-	consume('i')
+	for @stat() or { return false } {
+	}
 
-	// OR//
-	consume('j')
+	consume('}') or { return false }
 
-	// OR//
-	consume('k')
+	return true
+}
 
-	// OR//
-	consume('l')
+fn @fncall() bool {
+	@name() or { return false }
 
-	// OR//
-	consume('m')
+	consume('(') or { return false }
 
-	// OR//
-	consume('n')
+	@arglist() or { return false }
 
-	// OR//
-	consume('o')
+	consume(')') or { return false }
 
-	// OR//
-	consume('p')
+	return true
+}
 
-	// OR//
-	consume('q')
+fn @arglist() bool {
+	@arg() or { return false }
 
-	// OR//
-	consume('r')
+	for consume(',') or { return false } {
+		@arg() or { return false }
+	}
 
-	// OR//
-	consume('s')
+	return true
+}
 
-	// OR//
-	consume('t')
+fn @arg() bool {
+	// Match
+	{
+		@value() or { return false }
 
-	// OR//
-	consume('u')
+		// OR
 
-	// OR//
-	consume('v')
-
-	// OR//
-	consume('w')
-
-	// OR//
-	consume('x')
-
-	// OR//
-	consume('y')
-
-	// OR//
-	consume('z')
-
-	// OR//
-	consume('_')
-
-	// OR//
-	consume('A')
-
-	// OR//
-	consume('B')
-
-	// OR//
-	consume('C')
-
-	// OR//
-	consume('D')
-
-	// OR//
-	consume('E')
-
-	// OR//
-	consume('F')
-
-	// OR//
-	consume('G')
-
-	// OR//
-	consume('H')
-
-	// OR//
-	consume('I')
-
-	// OR//
-	consume('J')
-
-	// OR//
-	consume('K')
-
-	// OR//
-	consume('L')
-
-	// OR//
-	consume('M')
-
-	// OR//
-	consume('N')
-
-	// OR//
-	consume('O')
-
-	// OR//
-	consume('P')
-
-	// OR//
-	consume('Q')
-
-	// OR//
-	consume('R')
-
-	// OR//
-	consume('S')
-
-	// OR//
-	consume('T')
-
-	// OR//
-	consume('U')
-
-	// OR//
-	consume('V')
-
-	// OR//
-	consume('W')
-
-	// OR//
-	consume('X')
-
-	// OR//
-	consume('Y')
-
-	// OR//
-	consume('Z')
+		@name() or { return false }
+	}
+	return true
 }
