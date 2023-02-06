@@ -121,7 +121,9 @@ fn (node SyntaxNode) gen_src(depth int) string {
 		.repeat {
 			sb.append_line('for repeat_$depth {')
 			if node.children.contains(SyntaxNode{value: '|',s_type: .alt, children: []}) {
+				sb.append_line('if repeat$depth {')
 				sb.append_line(node.next_jmp(jumper,depth))
+				sb.append_line('}')
 			} else {
 				sb.append_line(node.next(depth))
 			}
