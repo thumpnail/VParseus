@@ -1,5 +1,26 @@
 module ebnf
 
+const(
+	test_head = "module main
+	import regex
+fn (mut ctx ParserContext) consume(value string) {
+	nxt := value
+	if rgx := regex.regex_base(value) {
+		// is regex
+	} else if ctx.peek() == value {
+		ctx.next()
+	}
+	error('Expected ' + value + ' got ' + nxt)
+}
+//peek
+fn (mut ctx ParserContext) peek() string {
+	return ctx.tokens[ctx.idx + 1]
+}
+//next
+fn (mut ctx ParserContext) next() string {
+	return ctx.tokens[ctx.idx++]
+}"
+)
 // use recursive match?
 
 // build_lexer_v2 is generates a lexer for recursive decent lexing...
@@ -56,11 +77,12 @@ fn (mut ctx ParserContext) next() string {
 ${ctx.gen_src()}
 "
 	//TODO: Change for production
-	return '${ctx.gen_src()}'
+	return "$test_head\n${ctx.gen_src()}"
 }
 fn (ctx VParseusContext) gen_src() string {
 	mut sb := StringBuilder{}
 	for i in ctx.ast.rules {
+		dump(i)
 		sb.append_text(i.gen_src(0))
 	}
 	return sb.get_final()
@@ -69,7 +91,7 @@ fn (node SyntaxNode) gen_src(depth int) string {
 	mut sb := StringBuilder{}
 	mut repeat := 0
 	mut jumper := 0
-	//sb.append_line('//${node.s_type.str()}: ${node.value.str()}')
+	sb.append_line('//${node.s_type.str()}: ${node.value.str()} # $depth')
 	match node.s_type {
 		.rule {
 			if depth == 0 {
@@ -86,42 +108,31 @@ fn (node SyntaxNode) gen_src(depth int) string {
 			sb.append_line('consume(${node.value})') //or { return false }
 		}
 		.alt {
-			sb.append_line('} else if ${node.children.len} {')
-			sb.append_line(node.next(depth))
+			sb.append_line('} else if 0 {')
 		}
 		.group {
-			if node.children.contains(SyntaxNode{value: '|',s_type: .alt,children: []}) {
-				sb.append_line('if ${node.children[jumper++].gen_src(depth+1)} {')
+			sb.append_line('if group_$depth {')
+			if node.children.contains(SyntaxNode{value: '|',s_type: .alt, children: []}) {
 				sb.append_line(node.next_jmp(jumper,depth))
-				sb.append_line('return true } else { return false }')
 			} else {
 				sb.append_line(node.next(depth))
 			}
 		}
 		.repeat {
-			sb.append_line('for {')
-			if node.children.contains(SyntaxNode{value: '|',s_type: .alt,children: []}) {
-				sb.append_line('if ${node.children[jumper++].gen_src(depth+1)} {')
+			sb.append_line('for repeat_$depth {')
+			if node.children.contains(SyntaxNode{value: '|',s_type: .alt, children: []}) {
 				sb.append_line(node.next_jmp(jumper,depth))
-				sb.append_line('return true } else { return false }')
 			} else {
 				sb.append_line(node.next(depth))
-
 			}
-			//add match if there are alt's upcoming
-			repeat++
 			sb.append_line('}')
 		}
 		.optional {
-			sb.append_line('if optional {')
-			//add match if there are alt's upcoming
-			if node.children.contains(SyntaxNode{value: '|',s_type: .alt,children: []}) {
-				sb.append_line('if ${node.children[jumper++].gen_src(depth+1)} {')
+			sb.append_line('if opt_$depth {')
+			if node.children.contains(SyntaxNode{value: '|',s_type: .alt, children: []}) {
 				sb.append_line(node.next_jmp(jumper,depth))
-				sb.append_line('return true } else { return false }')
 			} else {
 				sb.append_line(node.next(depth))
-
 			}
 			sb.append_line('}')
 		}
@@ -129,7 +140,11 @@ fn (node SyntaxNode) gen_src(depth int) string {
 			//add match if there are alt's upcoming
 			sb.append_line(node.next(depth))
 		}
-		.end {}
+		.end {
+			if node.value == ')' {
+				sb.append_line('}')
+			}
+		}
 		else {error('wrong token type')}
 	}
 	return sb.get_final()

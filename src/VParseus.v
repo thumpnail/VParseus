@@ -42,12 +42,12 @@ fn main() {
 				//print json to file
 				if ctx.args['json'].len == 1 {
 					println('Outputting to ${ctx.args['json'][0]}')
-					json := json.encode_pretty(ctx.ast)
-					os.write_file('${ctx.args[''][1]}.json', json) or { println("Failed to write file") }
+					json1 := json.encode_pretty(ctx.ast)
+					os.write_file('${ctx.args[''][1]}.json', json1) or { println("Failed to write file") }
 				} else {
 					println('Outputting to stdout')
-					json := json.encode_pretty(ctx.ast)
-					println(json)
+					json2 := json.encode_pretty(ctx.ast)
+					println(json2)
 				}
 			}
 			//Dump out to stdout
