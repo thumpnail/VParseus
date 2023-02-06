@@ -1,7 +1,5 @@
 module ebnf
 
-import json
-
 pub struct VParseusContext {
 	pub mut:
 	args map[string][]string

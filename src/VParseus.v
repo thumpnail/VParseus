@@ -15,6 +15,7 @@ fn main() {
 			//Finalize //Add token rules for easier parsing
 			// TODO: add option fot changing lexer generation method
 			if 'final' in ctx.args {
+				//FIXME: when using finalize option the parser does not generate the output file correctly
 				if ctx.args['final'].len > 0 {
 					println('Creating finalized ebnf (without tokens)')
 					//read the given tokens.ebnf and append to the input.ebnf stream
@@ -98,14 +99,22 @@ fn print_help() {
 		"usage: VParseus <ebnf file> [options]"
 		"	options:"
 		"		-final 	extract all literals into their own rules"
+		"				-> is not generating correctly"
+		"				-Fix-> Generate an ebnf and then use the generated one again"
+		"				VParseus <ebnf file name> -final -out <out ebnf file name>"
+		"				VParseus <out ebnf file name> -gen <module name>"
 		"		-final 	<ebnf file> extract all literals from the given file into their own rules"
+		"				-> is not generating correctly"
+		"				-Fix-> Generate an ebnf and then use the generated one again"
 		"		-out	<ebnf file> write ebnf file after modifications are being done e.g. -final"
 		"		-json 	to export to json"
 		"		-dump 	dump the ebnf document to std out"
 		"		-gen 	generate parser"
+		"		-gen <module name> generate parse with defined module name"
 		"		-help	display help"
 		"		-test	puts into path a v file containing main() to test lexer and parser"
 		"		-mod	sets the module name and folder name"
+		"				-> Not implemented"
 		"	TODO"
 	]
 	for h in help {

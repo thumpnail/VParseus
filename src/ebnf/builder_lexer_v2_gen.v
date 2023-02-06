@@ -11,7 +11,7 @@ fn (mut ctx VParseusContext) get_parse_tree_functions() string {
 fn (mut ctx VParseusContext) gen_fn(rule SyntaxNode) string {
 	mut res := 'fn parse_${rule.value}() {'
 	// dump(rule)
-	mut match_head := false
+	//mut match_head := false
 	for child in rule.children {
 		// ':=' // '|' // ';'
 		match child.s_type {
@@ -86,8 +86,8 @@ fn (mut ctx VParseusContext) gen_rule(rule SyntaxNode) string {
 }
 
 fn (mut ctx VParseusContext) gen_opt(rule SyntaxNode) string {
-	mut res := ''
-	return 'gen_opt'
+	mut res := 'gen_opt'
+	return res
 }
 
 fn (mut ctx VParseusContext) gen_grp(rule SyntaxNode) string {
