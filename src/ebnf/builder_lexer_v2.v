@@ -30,11 +30,12 @@ fn parse(words []string) []Token {
 }
 //generate recursive decent lexing
 "
-	//${ctx.get_parse_tree_functions()}
+	//${ctx.get_parse_tree_functions()}//old
 +"
 //helper functions
 //consume
-fn (mut ctx ParserContext) consume(value string) ! {
+// only consumes if matches
+fn (mut ctx ParserContext) consume(value string) {
 	nxt := value
 	if rgx := regex.regex_base(value) {
 		// is regex
@@ -54,7 +55,8 @@ fn (mut ctx ParserContext) next() string {
 //usw
 ${ctx.gen_src()}
 "
-	return result
+	//TODO: Change for production
+	return '${ctx.gen_src()}'
 }
 fn (ctx VParseusContext) gen_src() string {
 	mut sb := StringBuilder{}
@@ -67,6 +69,7 @@ fn (node SyntaxNode) gen_src(depth int) string {
 	mut sb := StringBuilder{}
 	mut repeat := 0
 	mut jumper := 0
+	//sb.append_line('//${node.s_type.str()}: ${node.value.str()}')
 	match node.s_type {
 		.rule {
 			if depth == 0 {
@@ -74,57 +77,74 @@ fn (node SyntaxNode) gen_src(depth int) string {
 				for i in jumper .. node.children.len {
 					sb.append_line(node.children[i].gen_src(depth+1))
 				}
-				sb.append_line('return true }')
+				sb.append_line('return false }')//Failed
 			} else {
-				sb.append_line('@${node.value}() or { return false }')
+				sb.append_line('@${node.value}()')//or { return false }
 			}
+		}
+		.literal {
+			sb.append_line('consume(${node.value})') //or { return false }
+		}
+		.alt {
+			sb.append_line('} else if ${node.children.len} {')
+			sb.append_line(node.next(depth))
 		}
 		.group {
 			if node.children.contains(SyntaxNode{value: '|',s_type: .alt,children: []}) {
-				sb.append_line('/*if*/{')
-				for i in jumper .. node.children.len {
-					sb.append_line(node.children[i].gen_src(depth+1))
-				}
-				sb.append_line('}')
+				sb.append_line('if ${node.children[jumper++].gen_src(depth+1)} {')
+				sb.append_line(node.next_jmp(jumper,depth))
+				sb.append_line('return true } else { return false }')
 			} else {
-				for child in node.children {
-					//add match if there are alt's upcoming
-					sb.append_line(child.gen_src(depth+1))
-				}
+				sb.append_line(node.next(depth))
 			}
 		}
 		.repeat {
-			sb.append_line('for ${node.children[jumper++].gen_src(depth+1)} {')
-			//add match if there are alt's upcoming
-			for i in jumper .. node.children.len {
-				sb.append_line(node.children[i].gen_src(depth+1))
+			sb.append_line('for {')
+			if node.children.contains(SyntaxNode{value: '|',s_type: .alt,children: []}) {
+				sb.append_line('if ${node.children[jumper++].gen_src(depth+1)} {')
+				sb.append_line(node.next_jmp(jumper,depth))
+				sb.append_line('return true } else { return false }')
+			} else {
+				sb.append_line(node.next(depth))
+
 			}
+			//add match if there are alt's upcoming
 			repeat++
 			sb.append_line('}')
 		}
 		.optional {
+			sb.append_line('if optional {')
 			//add match if there are alt's upcoming
-			for child in node.children {
-				sb.append_line(child.gen_src(depth+1))
+			if node.children.contains(SyntaxNode{value: '|',s_type: .alt,children: []}) {
+				sb.append_line('if ${node.children[jumper++].gen_src(depth+1)} {')
+				sb.append_line(node.next_jmp(jumper,depth))
+				sb.append_line('return true } else { return false }')
+			} else {
+				sb.append_line(node.next(depth))
+
 			}
-		}
-		.literal {
-			sb.append_line('consume(${node.value}) or { return false }')
+			sb.append_line('}')
 		}
 		.assign {
 			//add match if there are alt's upcoming
-			for key in node.children {
-				sb.append_line(key.gen_src(depth+1))
-			}
-		}
-		.alt {
-			sb.append_line('//OR')
-			for key in node.children {
-				sb.append_line(key.gen_src(depth+1))
-			}
+			sb.append_line(node.next(depth))
 		}
 		.end {}
 		else {error('wrong token type')}
 	}
 	return sb.get_final()
+}
+fn (node SyntaxNode) next(depth int) string {
+	mut sb := StringBuilder{}
+	for child in node.children {
+		sb.append_line(child.gen_src(depth+1))
+	}
+	return sb.final
+}
+fn (node SyntaxNode) next_jmp(jumper int, depth int) string {
+	mut sb := StringBuilder{}
+	for i in jumper .. node.children.len {
+		sb.append_line(node.children[i].gen_src(depth+1))
+	}
+	return sb.final
 }
