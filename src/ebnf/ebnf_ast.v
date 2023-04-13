@@ -91,3 +91,7 @@ fn (node SyntaxNode) get_max_depth(depth int) int {
 	}
 	return max_depth
 }
+
+fn (node SyntaxNode) get_string() {
+
+}

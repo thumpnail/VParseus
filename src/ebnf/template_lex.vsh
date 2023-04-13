@@ -153,7 +153,7 @@ fn preprocessor(script_lines []string) []string {
 					continue
 				}
 			}
-			if c == 'fn () string' || is_comment {
+			if c == '#' || is_comment {
 				is_comment = true
 				continue
 			}

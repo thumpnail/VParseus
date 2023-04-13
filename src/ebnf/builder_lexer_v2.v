@@ -85,10 +85,10 @@ fn (node SyntaxNode) gen_src(depth int) string {
 			sb.append_line('ctx.consume(${node.value})') //or { return false }
 		}
 		.alt {
-			sb.append_line('} else if placeholder_alt_$depth {')
+			sb.append_line('} else if peek() == ${node.get_next_literal()} {')
 		}
 		.group {
-			sb.append_line('if placeholder_group_$depth {')
+			sb.append_line('if peek() == ${node.get_next_literal()} {')
 			if node.children.contains(SyntaxNode{value: '|',s_type: .alt, children: []}) {
 				sb.append_line(node.next_jmp(jumper,depth))
 			} else {
@@ -96,9 +96,9 @@ fn (node SyntaxNode) gen_src(depth int) string {
 			}
 		}
 		.repeat {
-			sb.append_line('for placeholder_repeat_$depth {')
+			sb.append_line('for {')
 			if node.children.contains(SyntaxNode{value: '|',s_type: .alt, children: []}) {
-				sb.append_line('if placeholder_repeat_$depth {')
+				sb.append_line('if peek() == ${node.get_next_literal()} {')
 				sb.append_line(node.next_jmp(jumper,depth))
 				sb.append_line('} else { break }')
 			} else {
@@ -107,7 +107,7 @@ fn (node SyntaxNode) gen_src(depth int) string {
 			sb.append_line('}')
 		}
 		.optional {
-			sb.append_line('if placeholder_opt_$depth {')
+			sb.append_line('if peek() == ${node.get_next_literal()} {')
 			if node.children.contains(SyntaxNode{value: '|',s_type: .alt, children: []}) {
 				sb.append_line(node.next_jmp(jumper,depth))
 			} else {
@@ -141,4 +141,11 @@ fn (node SyntaxNode) next_jmp(jumper int, depth int) string {
 		sb.append_line(node.children[i].gen_src(depth+1))
 	}
 	return sb.final
+}
+fn (node SyntaxNode) get_next_literal() string {
+	res := node.get_literals()
+	if res.len > 0 {
+		return res[0]
+	}
+	return "'${node.s_type}'"
 }
