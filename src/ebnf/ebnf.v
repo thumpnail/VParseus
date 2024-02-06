@@ -11,7 +11,7 @@ pub fn (mut ctx VParseusContext) read_ebnf(lines []string) {
 	preprocessed := preprocessor(document_lines)
 	mut lexed := lexer(preprocessed)
 	ctx.add_grouping(mut lexed)
-	ast := parser(lexed)
+	ast := parse(lexed)
 	ctx.ast.raw, ctx.ast.rules = preprocessed, ast
 	ctx.ast.literals = get_literals(ctx)
 	ctx.ast.operators, ctx.ast.symbols, ctx.ast.keywords, ctx.ast.regex = filter_keywords(ctx.ast.literals)

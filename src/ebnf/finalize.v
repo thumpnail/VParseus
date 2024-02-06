@@ -13,7 +13,7 @@ pub fn (mut ctx VParseusContext) finalize() {
 		}
 	}
 	lexed := lexer(tmp)
-	ast := parser(lexed)
+	ast := parse(lexed)
 	ctx.ast.raw, ctx.ast.rules = tmp, ast
 }
 pub fn (mut ctx VParseusContext) get_ebnf(list []SyntaxNode) string {
