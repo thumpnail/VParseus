@@ -1,5 +1,5 @@
 # VParseus
-Is marked for major rewrite based on my Parseus Libary but that one has Priority.
+Is marked for major rewrite based on my Parseus Libary but the C# version has Priority.
 Parser Libary/(Generator) in V
 - Generator is out of the window for now
 
